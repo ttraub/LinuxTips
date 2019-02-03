@@ -1,0 +1,605 @@
+Terry's Linux Tips
+(archived from Google+ on Jan 31 2019)
+
+Oct 19 2015
+
+The Intel NUC5i5RYH
+
+I mentioned in another note that I bought an Intel NUC.  This is a very small, quiet PC, smaller than a Mac Mini and much in the same vein.  The 5i5RYH model comes with an Intel i5 processor (which has 4 cores; I don't know why they couldn't just call it i4, or at least put a "4" in the name somewhere).
+
+The NUC comes with 3 USB 3.0 ports, of which only two seem to work.  At first I thought it was a driver problem, but now that I've updated the firmware and changed operating systems, I'm convinced it's a flaw.  It accommodates a slim SSD drive (I put in a 100 gig Samsung) and 16 gigs of RAM.  For the display, it has a mini-HDMI port.  Yes, you need to go out and order an adapter for your HDMI cable, or else get one of those mini-to-regular cables.  I don't see why they couldn't use a full size HDMI as the Mac Mini does.
+
+I tried installing OpenSUSE 13.2, the latest and greatest version.  It ran into video problems.  Fedora didn't work either.  Finally I got Ubuntu 15.04 to install -- it comes with a very recent kernel version that the NUC was able to use.  Even then, there have been problems with the network, random pauses that make it very difficult to use.
+
+I originally got this NUC to replace a home-built Linux server that was hard-crashing every few days.  Rather than replace the motherboard, then the RAM, then the cables, etc., I opted for the NUC as a drop-in replacement for this huge box.
+
+Then, two things happened.  I updated the firmware on my Linux server and voila! it stopped crashing.  Thank heavens.  I am leery of updating firmware unless necessary, but in this case it was a lifesaver.
+
+Secondly, I realized I need a Windows computer for various tests and use cases.  Since the NUC wasn't very happy with Linux, I ordered an OEM Windows 7 dvd from Amazon for $79.  It came with a rather worn-looking license sticker on the outside.  "Oh boy," I thought, "this looks pirated."  
+
+But Windows installed like a dream, the license key was accepted without problem, and it was up and running within 30 minutes, albeit with no network connection.  Forewarned by some excellent reviews on Amazon, I had already downloaded a bunch of drivers from Intel's website including display and network.  I ran the driver installers right after installing Windows, and this got Windows to connect right away to the LAN.
+
+Next I installed  the Chrome browser, logged into it and allowed it to sync with my Mac Chrome bookmarks.  Finally I put TightVNC on the NUC so that I can easily window into the NUC without having to switch the display cables around or keep a 3rd keyboard on my already-crowded desk.  
+
+The result:  a pretty fast, quiet little Windows desktop.  OK, it's not Linux.  But it's necessary to have Windows in this day and age.  My aging work laptop does run XP, soon to be wiped and updated to Win7 by the fearless I.T. team, but now I have my own Windows machine.
+
+Conclusions:  don't buy a recent NUC to use with Linux.  The i5 is still new enough that it doesn't have driver support, despite assurances on the Intel website to the contrary.  Do buy a NUC if you need a very quiet, low energy, tiny-footprint Windows PC.  There are older NUCs out there running Linux, but overall you're better off avoiding this one.
+
+Probably my next (and final) acquisition for this bad boy will be a USB 3.0 expansion hub, to accommodate whatever gadgets I want to attach -- thumb drives, backup hard drives, etc.
+Mini PC Intel® NUC Kit NUC5i5RYH
+Review the features and configurations of the Intel® NUC kit NUC5i5RYH, equipped with the 5th generation Intel® Core™ i5-5250U processor.
+intel.com
+
+---
+Aug 6 2015
+
+Screen sharing
+
+I finally got my Mac and Linux machines to cooperate!  In using my Mac as a front end to my various workstations, screen sharing obviously has come to the fore as an important tool, but it can be tricky to use.
+
+I've been using TightVNC which works pretty well on the Windows laptop, but less well on Linux (as a destination).  Recently I discovered x11vnc which finally allows me to view the current session (as opposed to a new session that starts up specifically for the vnc viewer).
+
+Just install x11vnc (zypper or apt-get) and if you don't have your .vnc/passwd already set up, set one up:
+
+x11vnc -storepassword
+
+Then execute x11vnc as follows:
+
+x11vnc -usepw -forever -noxdamage -display :0
+
+And it will allow you to control your machine from elsewhere.  Don't use the ncache feature, because Mac screen sharing will display it as a huge vertical window -- this took me hours to figure out!
+
+Now, finally, using my Mac as a viewer, I have full control of my Linux workstation, my Windows laptop, my work Linux workstation via VPN, and my new Linux NUC system (more on that in another note).
+
+Screen sharing can be slightly glitchy but the rewards are substantial.
+
+For full information on x11vnc and excellent step-by-step instructions, visit the author's page: 
+http://www.karlrunge.com/x11vnc/
+
+UPDATE 2015-08-25
+The clipboard sharing is problematical.  I finally found this option that at least lets the Linux client send clipboard to the Mac host, i.e. if you are on a Mac and viewing your remote Linux session using screen sharing, then placing items on the Linux clipboard will also place them on the Mac clipboard.  You may not always want this feature, but if you're going between systems a lot, it's awfully handy to transfer data that otherwise you have to type manually, or copy into a file and scp to the other system for example!  Here is the option:
+-input KMBCF,M 
+This actually tells x11vnc to allow Keyboard, Mouse, and Clipboard.
+Here is the full command line, with the clipboard option added, and forked as a "nohup" process that will continue after your terminal is closed:
+
+  nohup x11vnc -input KMBCF,M -usepw -forever -noxdamage -display :0&
+
+---
+Jul 20 2015
+
+How to remove photos and videos from your Android device
+
+OK, this isn't exactly a Linux topic (though, of course, Android does run on Linux!).  It's just that Google doesn't make it obvious how to clear up space on your mobile device.
+
+Both my wife and I take lots of stills and videos with our phones, and of course eventually the phone fills up.  Unfortunately, our Nexus phones lack a microSD slot, so we can't simply pop in a new card as you would with a regular point-and-shoot camera.
+
+My usual procedure is to manually copy the files onto a PC hard drive where it will get backed up by my regular cron job (described in another note down below).
+
+Since you're a Linux power user, you can enjoy doing it this way.  Install the Google Android developer tools which include adb, a very powerful command line program for doing all sorts of things with your connected Android device.
+
+Note that you must enable debugging on your device.  Go to Settings->About Phone, and tap several times on "Build Number" until it says "debugging enabled".  You can then tap on "Settings->Developer Options" and make sure the "USB debugging" option is turned on.
+
+Once you have installed the SDK tools, set up your phone, and you have a path to adb (usually in  {android-sdk}/platform-tools/ ) you can execute the following command:
+
+adb shell
+
+This puts you into a linux shell session on your Android device.  If you happen to have more than one Android device connected to your computer, you need to find the ID as follows:
+
+adb devices
+
+It will give you a list of hex id strings like this:
+015d168951300e07
+
+Next you have to identify which one is the device you wish to work with.  Easiest way is simply to unplug the device and see which id disappears.  Once you have the right id, you specify the device as follows:
+
+adb -s 015d168951300e07 shell
+
+Now you are in a regular bash-like shell session. Execute these commands:
+
+cd /sdcard/DCIM/Camera
+ls -l
+
+This will show you all your current photos and videos from the Camera app (you may have other files elsewhere in the system such as in Downloads or in another app data folder).
+
+Now control-D and get back to your regular shell on your computer.  cd to whatever folder you wish to deposit the images in, and execute this command:
+
+adb -s 015d168951300e07 pull -p -a /sdcard/DCIM/Camera
+
+This will copy the files into the current directory.  The -p means display progress, and -a means preserve file time/date.  This could take quite a while, depending on how much data you're copying.
+
+Once this is done, you can rest easy that your pictures and movies are securely copied and will be backed up by whatever backup process you use.  I usually back it up immediately just to be on the safe side.
+
+Now you take your Android device and make sure your Google Photos app is updated to the latest version.  Don't just select and delete photos because this will delete them from the cloud!!!  I learned this the hard way (but fortunately I had already done the above manual backup, so it wasn't a disaster).
+
+Run Photos, tap the upper left menu button, tap "Device folders", and long press the files you want to delete.  As far as I know, there's no "select all" unfortunately, so you have to manually select them.  Once this is done, tap the upper right menu and choose "Delete device copy".  This will delete the files off your device but preserve them in the cloud.
+
+Now you have freed up gigabytes from your device, and the Photo app still displays the images because it's pulling them from the cloud.
+
+If, like me, you deleted images from the main screen of Photos and it replicated the delete to the cloud, you can restore them easily from your desktop computer.  
+
+Simply go to photos.google.com (used to be plus.google.com/photos/yourphotos) and click on the little cloud at the top that lets you upload.  
+
+Select all the files in the backup folder and it will (very slowly) upload them.  It seems to copy over existing images rather than create duplicates, so it's safe enough to do a mass upload if you're not sure what's missing.
+
+That's it!  It used to be that Google Plus understood that you were making more space on your device, and would not replicate a delete to the cloud server, but now they've changed that.  I suspect that after a couple million people have complained that they lost their precious pictures, Google will change this and make it easier to backup pictures and clear local storage, but until then, we have to do it the manual way.  At least, we know exactly what we're getting when we do it from the command line.
+
+Update 2015-08-25
+
+It appears that the Photo app has changed a bit.  Now you can select pictures and videos inside the Photo app, either individually or by the date, and remove them from the device while preserving them in the cloud.  Long-press one picture/video, and it goes into selection mode.  Then tap additional items to select them.  Then tap the upper right menu (3 vertical dots) which will offer to remove from device.  This clears up space while preserving the images in your Google account.
+
+Unfortunately there's no indicator as to whether a picture has already been removed from your device.  If you select such a picture, you'll see a trash can icon in the upper right instead of a menu.  When you try to delete the picture, it will warn you that you are removing it from all devices and from your cloud account.
+
+Again, the safest thing is to back up the Camera folder to your local hard disk first, then you can go about clearing the large video files off your device.  Hard disk space is cheap these days; you can get a 3-terabyte USB 3.0 disk for about $120, so just go for it and keep local copies of all those precious pics.
+
+---
+May 22 2015
+
+How to keep OpenConnect VPN running.
+
+If you work remotely, as I do, you probably need to keep a VPN (virtual private network) running on your workstation or laptop.  I use openconnect (http://www.infradead.org/openconnect/) to emulate the Cisco AnyConnect product which, of course, my employer doesn't provide for Linux or MacOS.
+
+On Linux, openconnect just works.  If you would like to learn the details of how to install and configure it, post a comment here and I'll provide more information.
+
+My Mac, however, is a different situation.  For some reason, although openconnect works great, it disconnects from the network after a few hours.  I found myself periodically re-running the script, re-logging in, etc., several times a day.  Annoying.
+
+Finally I came up with this solution to keep my VPN running smoothly on the Mac.  Create a script -- I call it "vpn" -- in your bin directory (e.g.,  /Users/johnsmith/bin/).
+
+Put this in the "vpn" script (all one line):
+echo myServerPassword | openconnect -u johnsmith --authgroup='MY_VPN_AuthGroup' myServerIPaddress --no-cert-check --reconnect-timeout 3000 --passwd-on-stdin
+
+This passes your VPN password into the openconnect command.  You will obviously need to put in the correct authgroup and ip address for your system.  The reconnect-timeout is an attempt to maximize the time before openconnect gives up on a connection; I'm not sure it makes that much difference.
+ 
+Save the script.  Open a terminal window and become superuser (sudo su).
+
+Start your VPN script from the command line like this:
+
+while true ; do sh /Users/johnsmith/bin/vpn ; done
+
+This tells bash to execute vpn in a loop.  Whenever vpn times out and exits, the while loop will restart it, until you kill it with control-C.
+
+Now you can minimize this terminal window and forget about it.  The VPN will constantly restart itself and will not need to prompt you for either your local superuser password or your server password.
+
+You can also put this "while" command into a cron job if you prefer to have it always running without a terminal.  I like having the terminal so that I can see what's happening, in case there's a connectivity problem with the server.
+Shared publicly
+
+It should be noted that Control-C won't kill a command line loop, at least in the bash shell.  Instead, use Control-Z followed by kill %1 which should stop the loop.  Otherwise, it will simply restart when you Control-C it!
+
+---
+Feb 18 2015
+
+Backups are a pain but an absolute necessity.  We in the Linux world have many excellent options when it comes to backing up our data, though many of us probably don't do backups as often as we should.
+
+I'm going to show you how to use rsync, a powerful and easy to use command that makes backing up your files a snap.
+
+First, you need an external hard disk to be mounted to your system.  Typically, you plug one into a USB port and Linux will detect the hard disk and assign it a device name, for example:
+/dev/sde1
+You can detect this device name by running dmesg immediately after plugging in your device.
+
+EDIT:  If you know the label of the external drive, it's easier to mount by label rather than by device id since dev id can change.  To locate the label, check in /dev/disk/by-label.  For example, the "My Passport" 2TB external drive I plugged into my hub has this device label:
+/dev/disk/by-label/My\\x20Passport
+
+To mount this drive, use this type of command (all on one line):
+sudo mount -o users,rw,uid=ttraub,gid=users /dev/disk/by-label/My\\x20Passport /mnt/bk
+
+Replace "ttraub" with your user id, and replace /mnt/bk with whatever empty directory you have created for this purpose.  Now you have a permanent, fixed command to mount your drive, that will always work, and you can make a script or alias, or add it to your fstab so it will always mount at boot time.
+
+Then, choose your folders that you want to back up.  Typically, you will want to back up your entire directory tree.  Once you have run one backup, rsync is smart enough to only update the changed files.  Here is a typical command, in this case to back up the user "ttraub" in /home/ttraub:
+
+cd /home
+# the following is all one line
+rsync -arvp ttraub --exclude foo.bak --exclude ttraub/.cache /var/run/media/ttraub/My\ Passport|grep -v ".*$"
+
+Let's break this down.  Essentially we are saying, back up everything in /home/ttraub to the device mounted on /var/run/media/ttraub/My\ Passport
+
+An alternative destination would be your own folder that you create, e.g.:
+sudo mkdir /mnt
+sudo mkdir /mnt/bk
+Then mount the drive as in the above example and your command will look like this:
+rsync -arvp ttraub --exclude foo.bak --exclude ttraub/.cache /mnt/bk |grep -v ".*$"
+
+Same thing as above, just  a shorter path!
+
+Note that when you plug in a USB hard drive, OpenSuSE and KDE will pop up a notification offering to mount it for you, and the default location will be under /var/run/media/USER.
+
+The hard drive I'm using is a two-terabyte Western Digital Passport USB 3.0, an inexpensive and reliable device that you can leave mounted or carry around; it's about the size of a cigarette package.
+
+The source is the folder "ttraub".  The destination is the My\ Passport drive.  So far, so good?
+
+Now to the options:
+-a = archive mode, will recurse and preserve every file attribute.
+-r = recursive mode, redundant with -a (left out of habit)
+-p = preserve owner attributes
+-v = verbose, will list the files that it is backing up
+
+--exclude = don't back up or update a pattern.  You could also use a file of exclude patterns and reference it with --exclude-from=FILE.
+
+Lastly, I have a grep to remove the stdout output because verbose outputs every file name discovered.  rsync reports the changed files to stderr, which is not caught by the pipe and grep.
+
+The first time you run such a command, of course, it will copy everything to the destination drive, much like this command:
+cp -prv . /mnt/MyDestinationDrive
+
+The next time you run it, rsync will compare each file and only back up the changed files.  Hence, it will do an incremental backup.
+
+One more option to keep in mind:  
+-n = dry run.  It shows you what it would do, but doesn't actually do anything.  Very handy when setting this command up.
+
+Next, you can place this command into a shell script, e.g.:
+#!/bin/bash
+cd /home
+rsync -arpv ttraub --exclude foo.ps --exclude ttraub/.cache /var/run/media/ttraub/My\ Passport | grep -v ".*/$"
+
+and name it something like "bk".  Make it executable so that whenever you feel like it, you can simply type "bk" and do a quick backup of whatever work you feel should be preserved.
+
+When you are happy with how your rsync command is working, you can then make it a cron job to run daily or even more often.
+You would edit your user crontab (no need to sudo):
+crontab -e
+
+It will put you into vi editor.  Type "i" to insert some text and enter something like this:
+0 2 * * * sh /home/ttraub/bin/bk
+(then press ESC, and type ZZ to save and exit.)
+
+This tells the system to execute, as your user, the shell script "bk", every day at 2am.  The zero means zero minutes past the hour, "2" refers to 0200 hours or 2am, and three asterisks mean "every day of month", "every month", and "every day of the week".  Look up "crontab" for more information.
+
+If your mail daemon is running, the system will email you every day after running this cron job, and you will see the files that were backed up.
+
+Congratulations!  You now have an automatic incremental backup running every night and you can rest easy.  Of course, don't forget to leave your external drive mounted!
+
+Note by the way that you can also run rsync over the internet, but it requires some setting up of SSL public keys.  Here's a pretty good explanation of how to run rsync over ssh:
+http://troy.jdmz.net/rsync/index.html
+
+Elsewhere I will describe how to generate and share your public keys so that you can ssh to remote machines without the need to enter a password.
+
+---
+Dec 5 2014
+
+I recently received a new backlit keyboard for my Opensuse Linux computer, an AJazz Cyborg Soldier gaming keyboard.  It's a full size, full travel keyboard with three different colors of LED back lighting and the price is so cheap at $34 (from an Ebay seller) that I just had to try one.  My desk is a bit cramped and this is the sparsest, most compact full keyboard I could find, and would shave an inch or so off the footprint that my Linux keyboard takes up.
+
+Unfortunately, it doesn't work with Linux.  They did say in the specs that it's compatible with Windows and Mac operating systems, and I did find a testimonial in one of the Amazon user reviews that it fails in Linux, but I was determined to try anyway. 
+
+The problem is that the Ctrl and Alt keys are differently mapped from standard keyboards and are interpreted as Shift keys by the OS.  I ran xev which reveals that the scan codes for Ctrl and Alt are indeed the same as for Shift.  That means that at the X Window layer, you can't remap these keys to do the right thing.  It's a USB keyboard driver problem.
+
+I checked the logs (run dmesg right after plugging in the keyboard) and discovered that it identifies itself as a SoNIX USB Keyboard.  So I looked up SoNIX and found that it's a Taiwanese company that manufactures OEM items like USB parts and micro controllers.  I was unable to locate the part without dismantling the keyboard and studying the chip numbers, though it's still possible that they have a Linux driver that might work.
+
+An alternative approach would be to run a low-level USB input/output scanning tool to determine exactly what scan codes are being sent to the computer from the keyboard, then take the source code of the standard keyboard driver and hack it to support those scan codes.  If I find the time, and can figure out how to do this without buying an expensive piece of lab equipment, I'll try to write a keyboard driver to support this peripheral.  Stay tuned!
+
+By the way, as a keyboard, the A-Jazz is not bad at all, except for one flaw (in my opinion):  They placed the \| key directly to the left of the ENTER key, when normally it's positioned above the ENTER key on most keyboards.  Thus, I found myself frequently keying a backslash when I meant to hit ENTER.  It's something you can train your fingers to avoid, but it's annoying that they felt the need to tinker with it in the first place.
+
+I'm still looking for a very compact backlit keyboard (obviously, one that is Linux compatible) so please do chime in if you have seen one.  The only other one that seems remotely acceptable is the Logitech K740 (http://www.amazon.com/Logitech-920-000914-Illuminated-Keyboard-K740/dp/B001F51G16/ref=sr_1_1?s=electronics&ie=UTF8&qid=1417791141&sr=1-1&keywords=logitech+backlit+keyboard) which is pretty good, priced at about $50, from a reputable manufacturer, and works with Linux.  However it has this built-in wrist rest that I absolutely cannot fit on my desk (which has two keyboards stacked up, one Linux and one Mac).  Why they didn't make the wrist rest detachable is left as an exercise.  Most regrettable.
+
+---
+Feb 11 2014
+
+rpm intended for a different architecture
+
+Have you ever seen that message while trying to install your 64 bit RPM to your 64 bit OpenSuse Linux OS?  I have seen it many times.  Inexplicably, the command line "rpm -Uvh some_application.rpm" fails with the above message, while YaST and Apper are happy to install the same file with no issues.
+
+Even stranger, I have found very few comments about this problem.  You'd think it would be common, but it's really not.  At last, I found a solution thanks to another user (who shall unfortunately remain anonymous until I can find the web site and comment again).
+
+I usually use xterm as a command line console, just out of habit.  But for some reason, this causes the 32bit versus 64bit confusion. When I executed the same rpm command in konsole, which is a sophisticated upgrade to xterm, it installed the software with no complaint.
+
+I suppose that xterm contains some legacy 32bit code that imposes some kind of limitation on software executed from the shell, possibly a bug or malfunction inside of xterm or inside the X11 system.  At any rate, problem is solved.
+
+---
+Jan 27 2014
+
+If, like me, you like to create MP3 files from older CD's and cassettes, you may end up spending a lot of time editing your MP3's to add metadata (the ID3 information) so that the album, artist, track name, and date appear properly in the display of your player.
+
+I have found kid3 to be a convenient and nicely designed tool for updating MP3's, but unfortunately it appears not to be supported in recent SuSE releases.
+
+It is still possible to download the sources for kid3 at http://kid3.sourceforge.net/ and build them yourself.  However, I found that kid3 won't build in suse 12.3 because of updates to ffmpeg/avutil.h 
+
+So add this line right after  #ifdef  HAVE_AV_AUDIO_CONVERT
+
+#define SAMPLE_FMT_S16  AV_SAMPLE_FMT_S16
+
+Then the code builds properly and you can go back to using this great tool.
+
+It's also possible to assign metadata from the command line with id3tag (part of the id3lib package obtainable from standard distributions).  For example, suppose you have ripped an old album to hard disk.  Use this command, all on one line:
+
+id3tag --album="Led Zeppelin I" --artist="Led Zeppelin" --song="Good Times, Bad Times" --year="1969" --track=1 --total=9 track1.mp3
+
+You can script-ify this pretty easily, and then just run the script to update all your mp3 files.  It's also helpful to rename the mp3 file to something more obvious, such as 01-Led_Zeppelin_1-Good_Times_Bad_Times.mp3 which is most helpful when manipulating files.
+
+As far as ripping tools go, my favorite has long been grip, but grip appears to have stopped being supported and it was necessary to manually and painfully build it last time I updated the OS.  If there's any interest, I'll post the process in another note.
+
+In a separate article, I'll discuss the whole notion of ripping cassettes and tapes which is fun but can also be tedious without the right tools.
+
+Update:  In OpenSuSE 13.1, kid3 is available.  The current version I am running is kid3-3.1.2-1.10.x86_64. I am not sure why I could not get kid3 in OpenSuse 12; perhaps my package libraries were messed up.  At any rate, get it and use it!
+
+---
+Oct 19 2013
+
+Do you wish to update a file's time/date stamp to match another file?  It's quite easy using touch:
+touch -r FILE1 FILE2
+sets the access and modification times of FILE2 to match FILE1.
+
+Why would you need this?  If, for example, you use the shrink_avi.sh tool mentioned elsewhere on this page, you'll end up with a file that has today's date and a backup file (*.bak) with the original date.  In my photos and videos folders, I like to preserve the original time/date of files, so this is a neat way to do so.
+
+In fact, I recently added this line to the end of the shrink_avi.sh script in order to make it automatic:
+# set new avi file date/time to match original (backed up) file
+touch -r $1.bak $1
+
+---
+Oct 19 2013
+
+Ever need to see a good old-fashioned ASCII chart?  In a console:
+man ascii
+
+from atomicobject.com via news.ycombinator.com
+
+---
+Nov 30 2012
+
+If like me, you have made a lot of AVI videos using your digital camera on family trips, you are probably suffering from disk bloat.  Just a few of those precious moments can add up to gigabytes of space on the hard drive, and after a while, that terabyte disk just doesn't seem as spacious as it used to.
+
+Recently I started wondering whether some of these 300 meg and 400 meg files could be compressed without losing much quality.  After a little research and some trial and error, I found a command that seems to work fairly well.
+
+mencoder my_video.avi -oac mp3lame -ovc lavc -lavcopts acodec=mp3,1bitrate=128,vcodec=mpeg4,vbitrate=800,vhq,vm4v -o foo.avi
+This shrinks the AVI by a factor of 9 or 10 and still is decent quality.
+
+Here's a shell script you can place in your bin directory and name as  "shrink_avi.sh":
+
+#!/bin/bash
+if [ -z $1 ] ; then
+    echo "Usage:  $0 filename"
+    exit
+fi
+ls -lh $1
+mencoder $1 -oac mp3lame -ovc lavc -lavcopts acodec=mp3,1bitrate=128,vcodec=mpeg4,vbitrate=800,vhq,vm4v -o /tmp/foo.avi
+mv $1 $1.bak
+mv /tmp/foo.avi $1
+ls -lh $1
+
+Note that the mencoder command is all on one line.  I have found a slight deterioration in quality that I'm willing to put up with most of the time.  And It's quite satisfying to see that 4 gig directory shrink down to 400 megs!
+
+---
+May 2 2012
+
+I just installed a new Brother HL-2270DW laser printer on my home network. This inexpensive yet powerful machine comes with wifi and ethernet connectivity as well as duplex printing, all for $110 from the local Staples. I had comparison shopped over at Amazon and found similar pricing, so I bought locally and had the printer up and running within an hour of visiting the store.
+
+I was quite appalled however to discover last night that Amazon now lists the same printer for $84.98 (with Prime free shipping)! Well, it's all installed and working so I will not be returning it, but anyone in the market for a new cheap printer should take note of this remarkable deal.
+
+I chose to connect the printer directly to the D-Link router, which had a couple of free ethernet ports, rather than to my desktop Linux machine which is low on USB ports. After powering on the printer, I found its address on the D-Link administration web page, and I could then browse to its control panel. 
+
+I needed to pay a visit to the Brother.com website and navigate to the Linux drivers, since the stock driver set provided by Suse does not include this printer model:
+http://welcome.solutions.brother.com/bsc/public_s/id/linux/en/index.html
+
+I got both the LPR driver and the cupswrapper driver, installed them both according to the instructions:
+
+sudo rpm -Uvh hl2270dwlpr-2.1.0-1.i386.rpm
+sudo rpm -Uvh cupswrapperHL2270DW-2.0.4-2.i386.rpm
+
+Then I ran YaST -> Printer and added the Brother printer. After some experimentation with ipp, I told OpenSuse to use HP JetDirect to connect to the printer at the following address:_socket://192.168.1.188_
+(your address would vary, of course)
+
+I found that the HL-2270DW wasn't in alphabetical order with all the dozens of other HL models, because they left out a hyphen: HL2270DW
+But after searching up and down through the list, I did find it finally.
+
+The last step was to set the printer to DuplexNoTumble, so that duplex printing would be turn-the-page style orientation which is what you would normally expect. This can be done from either the CUPS config screen:
+http://localhost:631
+Or it can be done from YaST as well.
+
+I hope this information is useful to anyone who finds printer setup in Linux to be less than transparent and obvious.
+
+---
+May 2 2012
+
+ntp is a background process that keeps your Linux system time/date in sync with your favorite atomic clock. Normally, this service is automatically set up (typically as ntpd) at installation time, and that's the end of it.
+
+However, for some reason it was not automatically set up in a fresh install of OpenSuse 12.1. I honestly can't remember whether it was ever a default on Suse; I've used too many distributions by now to keep track of who thinks ntp is important and who does not.
+
+Anyway, when I tried to start ntp manually, it returned strange errors. Unable to fix the configuration after a couple of fruitless hours of research, I gave up on ntp. However, I did learn about ntpdate, which is the actual program which ntp invokes to set the system time.
+
+Therefore I simply created my own equivalent of ntp, as follows:
+
+I created a shell script and named it update_time.sh, with the following contents:
+
+/usr/sbin/ntpdate pool.ntp.org
+
+When I invoke this command manually, it does the right thing and updates the clock to internet standard time, typically by a few hundredths of a second.
+
+Then I created a cron job to run it once an hour, as follows:
+
+# as super-user, edit the cron table
+
+crontab -e
+
+# add the following lines
+
+
+# execute a time update on the hour (because the ntp service is broken in 12.1)
+0 * * * * /home/ttraub/bin/update_timedate.sh >> /var/log/update_time.log
+
+Note that the line beginning with "# execute..." is a comment, which is always a good idea in cron files because they can get confusing. 
+
+The next line contains the minute, hour, day-of-month, month, day-of-week, and command. An asterisk means "all". Thus, run this command at 12:00, 1:00, 2:00, etc. right through 23:00, every day of the month, every month, and every day of the week. 
+
+I also wanted it to log itself just to see if it was working, also a good practice. Since it's a tiny log, I left it in after it was clear that there were no bugs.
+
+---
+Mar 10 2012
+
+A minor but confusing feature of the latest KDE4 (at least as installed on OpenSuse 12) is desktop configuration.  I would like to have different images on my various virtual desktops, and I also like to have frequently used applications as icons on the desktop, but the solution was not obvious.
+
+Right-click on the desktop, click on Create Activity, and choose Folder View.  This is the only way I've found to display the icons which I added previously to my KDE desktop folder.  (How to add more icons will be addressed in a future addendum.)
+
+You can then right-click the desktop, choose Folder View Settings, and then you can set the backdrop as you wish (if you don't want a distorted view on a wide screen, choose "Scaled and Cropped").
+
+---
+Mar 5 2012
+
+OK, two huge changes in my home office workstation:
+
+1. New hardware! An Intel DQ67S motherboard with an i5 processor (4-core -- don't ask me why they can't call their 4-core an i4, their 8-core an i8, etc.) and 16 gigs of RAM. This baby screams. It's not the fastest system you can buy, but it was economical. I also got a 250 gig hard disk for the OS partition (massive overkill there) and I'm reusing my 1-terabyte drive for /home.
+
+2. OpenSuse 12.1! This is the latest and greatest, and I suggest you check it out. You may have noticed, I was getting tired of Ubuntu's little user interface quirks that are derailing that once-great distro. My work computer runs OpenSuse 11.3, so I figure this is a chance to test out the new version, and so far I'm very impressed.
+
+It installed smoothly. The only hitch was that the motherboard only has 6 USB ports, which are totally used up what with mouse, keyboard, USB audio, external DVD, printer, etc. I have a powered USB hub with seven more ports, and they work once the system is booted up, but at boot time the system can't see peripherals on the hub. For example, I was unable to boot from the external DVD until I moved it from the hub to a primary USB socket. Similarly, the printer (an HP F4480 inkjet/scanner) isn't recognized unless it's direct. I don't know if this is a motherboard issue or a Suse issue.
+
+I have on order a 5-USB PCI card which should solve the hub problem. We'll find out soon. EDIT It didn't.
+
+The only problem I have encountered with 12.1 so far is the lack of music editing software such as Rosegarden, PatchAge, and Ardour, which are provided for Ubuntu and for previous versions of OpenSuse. I heard that one major music package, Lilypond, is not ready yet for 12.1, and so they omitted several of these types of packages. I'm disappointed because I specifically was planning to do some music mixing and editing on this system.
+
+However, these packages can be manually downloaded, compiled, and installed. You just have to keep Yast running because you will need to get most of the dependencies manually. A pain, to say the least. But better than the bad old days of Fedora/Redhat 5.0 when we didn't even have Yast.
+
+The great news is that, like every new Linux distro, this version of OpenSuse is more compatible and slicker than ever before. Memory is cheap, folks. Throw in another 4 gigs for 50 bucks, and you will have more capacity to run VirtualBox, which allows you to run multiple distros. Currently I have Windows XP and Ubuntu 11.10 in virtual boxes. It's a great way to test a distro in a sandbox.
+
+---
+Mar 10 2012
+
+K3b, the excellent free CD/DVD burning software for Linux, seems to be broken for OpenSuse 12.1.  I mean, it works, but it doesn't properly link to the K3B-codecs library which tells it how to use MP3 files.
+
+Why would you care?  If you have a large collection of MP3 files and, like me, you occasionally wish to burn a CD to use in your old fashioned boombox or car CD player, K3b is an excellent and convenient tool.
+
+I finally found a fix:
+
+1. run Yast Software Management and uninstall K3b and K3b codecs.
+
+2. make sure you have the Packman repository installed:
+
+sudo zypper addrepo -r http://packman.inode.at/suse/12.1/packman.repo
+
+3. Install the Packman versions of K3b and K3b-codecs (and make sure the versions match--for me, it was k3b-2.0.2-13.8.x86_64 and k3b-codecs-2.0.2-13.8.x86_64.
+4. Now K3B should properly recognize MP3 files!
+
+---
+Mar 1 2012
+
+If, like me, you find the Ubuntu 11.04+ scroll bars confusing and difficult to use with those up/down arrow things, there's an easy way to put them back the way we are all used to, thanks to Liberian Geek:
+
+sudo apt-get remove liboverlay-scrollbar*
+reboot
+
+And presto, you will see the regular old scroll controls, minus the silly arrows.
+
+---
+Feb 25 2012
+
+Concatenating a set of PDF files into one large PDF is a surprisingly useful thing to do; it enables you to email someone a single PDF file rather than 3-4, it lets you create a multi-page PDF from a bunch of single pages, and it's useful for moving a bunch of articles or chapters of a book onto a tablet or other reading device to read as an e-book.
+
+The best way I've found in Linux is to use the powerful pdftk ("pdf toolkit") utility.
+sudo apt-get install pdftk
+This package is also available for other distributions such as Suse.
+
+Once you have installed pdftk, it's easy to combine PDF files from the command line.
+
+pdftk *.pdf cat output myOutput.pdf
+
+You can also specify the order they get concatenated, for example:
+
+pdftk cover.pdf table_of_contents.pdf page*.pdf cat output all.pdf
+
+This is just one of the many functions pdftk offers. You can also add headers and footers to pdf files. I have used it to add page numbers as well. It's a bit more involved than simple concatenation, so I'll leave that discussion for another time. If anyone asks, I'll be glad to share the information here.
+
+---
+Feb 25 2012
+
+I used a Palm device from 1997 until 2010, when I finally bought an Android phone.  In many ways, Palm was and remains the best PDA.  Its user interface was simple, straight forward, and well integrated.  But, the idea of having a single device with all my personal data as well as phone/PDA/games/browser capabilities was just too compelling.  I upgraded, and have not looked back.
+
+The trick was how to get those 13 years of contacts, calendar entries, and memos into my Android device.  As a Linux user (which you obviously are, since you're reading this!), you're in luck.  It's pretty easy to convert using the open source tools available for Palm.
+
+To export Palm contacts to gmail:
+1. from Jpilot, export all contacts in vCard format.
+2. Import directly into gmail contacts (clear contacts first)
+
+To export Palm calendar to Google Calendar:
+1. run a Palm backup:  press the Sync button on the Palm, and execute:
+pilot-xfer -p /dev/ttyUSB1 --update .
+(You would substitute the correct device id for your Palm; you can usually discover it by pressing Sync, then run dmesg and see what was assigned.)
+2. java -jar ~/palm/pdbconverter.jar -c iCalendar -i CalendarDB-PDat.pdb -o calendar.ical
+3. import into Google Calendar
+
+Oops, I should have pointed out:  you need to download a couple of tools.
+pilot-xfer is part of the pilot-link suite and is easily obtained for most distributions.  If you have JPilot, you probably already have pilot-link installed.
+pdbconverter.jar is a handy little utility for converting your Palm calendar into iCal format.  Then, it is easily uploaded to Google Calendar as a separate calendar.
+
+Contacts converted very easily, but it did take me a couple of iterations to import Calendar.  This was a couple of years ago, and Google's import may have improved since then.
+
+As for To-Do, you can export it as text or iCal from JPilot, and then import it as a Google Document.  I don't know if you can create tasks from it; you may need to manually recreate tasks.
+
+Memos can export as text (or comma delimited format "csv") from JPilot, and then you can import them into Google Docs.  You may have to do some cutting and pasting to recreate all your separate memos.  In my case, I had thousands of memos, and I gave up even bothering.  Of course, you'd like to ideally move the Memos directly onto your Android (or iPhone) device, but unfortunately the designers of these newer operating systems gave no thought to supporting legacy data such as Palm.  Some Android note applications claim to import Palm pdb (database) files, but I've had mixed results with them.  Anyway, once you get it all into Google Docs, you can view it on your handheld or on your desktop and it's safely backed up on the cloud.
+
+---
+Feb 25 2012
+
+Honestly, I don't know what those people are thinking at Canonical but they've been making some strange decisions lately regarding user interfaces that are really rubbing me (and thousands of others) the wrong way.  
+For example:  starting with Ubuntu 10.10, Canonical decided that all of its users would prefer to have the window controls (minimize, maximize, close) on the top left instead of the top right.  Well, they're wrong, to judge by the many websites that reveal how to fix this gratuitous and confusing change.
+
+[all one line]
+gconftool-2 --set /apps/metacity/general/button_layout --type string menu:minimize,maximize,close
+This should put your buttons back where nature intended them to be.
+
+Then, in 11.04, Canonical completely replaced the Gnome menu and toolbar approach with this weird vertical button bar down the side, the so-called Unity user interface.  I found it horrible, limiting, and confusing.  I can't always remember all the little proggies I have installed, and I really want to just pull down a menu, drill down to Tools or Video or what have you, and click on my app.  By removing the whole menu system, they eliminated my primary way to access my apps, and replaced it with a scrollable button bar that is all but unusable.
+
+Luckily, you can choose the older interface in 11.04 at login time, and it will remember your choice.  Unfortunately, in 11.10 they made it mandatory to use Unity.  Thou shalt obey.  At this point I only have 11.10 running in a VirtualBox, and I did find a way to add the Gnome menus back in, but not the toolbar (yet).  Others have documented how to do this so google it and post here if you'd like to share.  I haven't had the need as yet!
+
+---
+Feb 25 2012
+
+We have a lot of images of our daughter and our general family life on the hard disk, and we like watching them randomly displayed on the gorgeous 23-inch LCD screen. Makes those tiny little LCD picture frames seem kind of lame by comparison.
+
+In recent editions of Ubuntu, I was unable to get the screen saver to use my photo folder; it seemed to ignore the setting. Probably it was a bug in that version. Anyway, I finally found the way to force the Gnome screensaver to show my pics:
+
+[note, this is all one line]
+sudo gedit /usr/share/gnome-screensaver/gnome-screensaver-preferences.ui
+
+change to (also all one line):
+Exec=/usr/lib/gnome-screensaver/gnome-screensaver/slideshow --location=Pictures
+
+Now, I had problems with even this approach in the latest (11.04) version of Ubuntu that I have installed. The stupid thing didn't display the file name in the corner, so I could not easily find a particularly compelling image to view/share.
+
+So finally I downloaded XScreenSaver, installed it, and disabled the default gnome-screensaver. XScreenSaver not only displays images beautifully in its slideshow mode, but it also displays the filename.
+
+---
+Feb 25 2012
+
+Most Linux distributions don't come ready to decrypt (in other words, watch movies on) commercial DVDs.  You have to download and install the dvdread library and tools to make this possible.  It's annoying and is related to the ridiculously strict copyright laws in the U.S.
+
+To set up dvd decryption on an Ubuntu PC:
+sudo apt-get install libdvdread4
+sudo /usr/share/doc/libdvdread4/install-css.sh
+There are quite a lot of websites that explain how to enable DVD viewing (and ripping) in Linux, so if this doesn't work right for you, just google around.  Your distribution may require a slightly different library.  But, they pretty much all rely on libdvdread.
+
+I don't know about blueray movies, though.
+
+---
+Feb 25 2012
+
+Do you ever forget how to handle a DEB file in Ubuntu?  I do.  If you open it with a file manager, the package program is automatically used, but from the command line it's less obvious how to install a deb package:
+
+sudo dpkg -i package.deb
+
+The following command just tells you the contents of the archive:
+
+dpkg -c package.deb
+
+If in doubt, you can always return to the file manager approach.  From the command line:
+
+nautilus
+
+Note that other distributions have other file managers, but nautilus seems to be quite widespread these days.
+
+---
+Feb 25 2012
+
+Sometimes it's handy to find out how much space a particular type of file takes up in local storage, if you're thinking of backing up all your images to a DVD or thumb drive or remote drive, for example.  The following command finds all the jpeg files from the current directory down, and displays the total at the bottom:
+
+find . -iname "*.jpg" -print0 | xargs -0 du -ck
+You could add a tail to just see the final total, e.g.
+
+find . -iname "*.jpg" -print0 | xargs -0 du -ck | tail -1
+
+Also, to make it more "human readable", you can add -h to the "du" command to display sizes in megs, gigs, etc., e.g.
+
+find . -iname "*.jpg" -print0 | xargs -0 du -ckh | tail -1
+
+---
+Feb 25 2012
+I just acquired a Logitech C310 (see link below) to replace my aging Microsoft Webcam, which seems to have stopped working with Skype for Linux.
+
+The C310 installed without a hitch on the Ubuntu 11.04 system; I simply plugged it in, then selected it from the choices in Skype video setup, and presto, I was back in business!
+
+It also works well with Cheese (http://projects.gnome.org/cheese/,) displaying a gorgeous high def image. This is the way plug-n-play should work!
+
+---
+
